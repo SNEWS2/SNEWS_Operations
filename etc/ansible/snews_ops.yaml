@@ -1,0 +1,90 @@
+- name: snews-cs server deployment
+  hosts: prod
+  vars:
+    opsbase: '~/.snews-ansible'
+  environment:
+    PATH: "{{ opsbase }}/apps/go/bin:{{ opsbase }}/apps/apptainer/bin:{{ ansible_env.PATH }}"
+
+  tasks:
+   - name: Remove {{ opsbase }}
+     ansible.builtin.file:
+       state: absent
+       path: "{{ opsbase }}"
+
+   - name: Create directory structure {{ opsbase }}
+     ansible.builtin.file:
+       path: "{{ opsbase }}"
+       state: directory
+
+   - name: Create directory structure {{ opsbase }}/src 
+     ansible.builtin.file:
+       path: "{{ opsbase }}/src"
+       state: directory
+
+   - name: Create directory structure {{ opsbase }}/apps
+     ansible.builtin.file:
+       path: "{{ opsbase }}/apps"
+       state: directory
+
+   - name: Create directory structure {{ opsbase }}/apps/snews_cs
+     ansible.builtin.file:
+       path: "{{ opsbase }}/apps/snews_cs"
+       state: directory
+
+   - name: Create directory structure {{ opsbase }}/data
+     ansible.builtin.file:
+       path: "{{ opsbase }}/data"
+       state: directory
+
+   - name: Clone the snews ops repo
+     ansible.builtin.git:
+       repo: https://github.com/whiskey9cjo/SNEWS_Operations.git
+       dest: "{{ opsbase }}/src/SNEWS_Operations"
+
+   - name: Copy over the snews_cs apptainer definition.
+     ansible.builtin.copy:
+       src: "{{ opsbase }}/src/SNEWS_Operations/apps/snews_cs/snews_cs.def"
+       dest: "{{ opsbase }}/apps/snews_cs/snews_cs.def"
+       remote_src: yes
+
+   - name: Download go
+     ansible.builtin.get_url:
+       url: https://go.dev/dl/go1.21.5.linux-amd64.tar.gz
+       dest: "{{ opsbase }}/src/go.tar.gz"
+
+   - name: Untar go
+     ansible.builtin.unarchive:
+       keep_newer: true
+       src: "{{ opsbase }}/src/go.tar.gz"
+       dest: "{{ opsbase }}/apps"
+       remote_src: yes
+       creates: "{{ opsbase }}/apps/go/bin/go"
+
+   - name: Clone the Apptainer repo
+     ansible.builtin.git:
+       repo: https://github.com/apptainer/apptainer.git
+       dest: "{{ opsbase }}/src/apptainer"
+
+   - name: Configure apptainer
+     ansible.builtin.shell: PATH={{ opsbase }}/apps/go/bin:$PATH ./mconfig --prefix={{ opsbase }}/apps/apptainer
+     args:
+       creates: "{{ opsbase }}/src/apptainer/builddir/Makefile"
+       chdir: "{{ opsbase }}/src/apptainer"
+
+   - name: Build apptainer
+     ansible.builtin.shell: make
+     args:
+       creates: "{{ opsbase }}/src/apptainer/builddir/apptainer"
+       chdir: "{{ opsbase }}/src/apptainer/builddir"
+
+   - name: Install apptainer
+     ansible.builtin.shell: PATH={{ opsbase }}/apps/go/bin:$PATH make install
+     args:
+       chdir: "{{ opsbase }}/src/apptainer/builddir"
+       creates: "{{ opsbase }}/apps/apptainer/bin/apptainer"
+
+   - name: Building snews_cs container with apptainer
+     ansible.builtin.shell: PATH={{ opsbase }}/apps/go/bin:{{ opsbase }}/apps/apptainer/bin:$PATH apptainer build snews_cs.img snews_cs.def
+     args:
+       chdir: "{{ opsbase }}/apps/snews_cs"
+       creates: "{{ opsbase }}/apps/snews_cs/snews_cs.img"
