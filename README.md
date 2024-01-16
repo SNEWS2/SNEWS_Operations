@@ -39,4 +39,5 @@ It will eventually become necessary to rotate your log files.
 An example configuration exists in [SNEWS_Operations/etc/logrotate/logrotate.conf](https://github.com/SNEWS2/SNEWS_Operations/blob/main/etc/logrotate/logrotate.conf).
 
 An okay crontab might be configured like:
+
 	7 1 * * * /usr/sbin/logrotate -l ~/data/logrotate/logrotate.log -s ~/run/logrotate/state ~/etc/logrotate/logrotate.conf
