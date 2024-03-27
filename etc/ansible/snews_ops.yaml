@@ -6,10 +6,10 @@
     PATH: "{{ opsbase }}/apps/go/bin:{{ opsbase }}/apps/apptainer/bin:{{ ansible_env.PATH }}"
 
   tasks:
-   - name: Remove {{ opsbase }}
-     ansible.builtin.file:
-       state: absent
-       path: "{{ opsbase }}"
+   #- name: Remove {{ opsbase }}
+   #  ansible.builtin.file:
+   #    state: absent
+   #    path: "{{ opsbase }}"
 
    - name: Create directory structure {{ opsbase }}
      ansible.builtin.file:
