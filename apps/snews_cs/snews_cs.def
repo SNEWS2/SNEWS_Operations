@@ -56,13 +56,14 @@ From: ubuntu:22.04
     mkdir -pv $SNEWSBASE
     #mkdir -pv $SNEWSDATA
     apt-get update && apt-get install -y strace ca-certificates gpg colorized-logs iproute2 dialog
-    apt-get update && apt-get install -y vim git python3-venv python3-certifi
+    apt-get update && apt-get install -y vim git python3.11-venv python3.11
     export DEBIAN_FRONTEND=noninteractive
     cd $SNEWSBASE
     git clone $SNEWSREPO
     git clone $SNEWSPTREPO
-    python3 -m venv $SNEWSVENV
+    python3.11 -m venv $SNEWSVENV
     . $SNEWSVENV/bin/activate
+
     cd SNEWS_Coincidence_System
 
     #######################################
@@ -76,7 +77,7 @@ From: ubuntu:22.04
     #######################################
     # TODO: Figure out how to put the python version into a variable.
     ln -sfv $SNEWSDATA/snewsbeats beats
-    ln -sfv $SNEWSDATA/snewsbeats $SNEWSBASE/$SNEWSVENV/lib/python3.10/site-packages/beats
+    ln -sfv $SNEWSDATA/snewsbeats $SNEWSBASE/$SNEWSVENV/lib/python3.11/site-packages/beats
 
 
     #######################################
