@@ -78,6 +78,7 @@ From: ubuntu:22.04
     # TODO: Figure out how to put the python version into a variable.
     ln -sfv $SNEWSDATA/snewsbeats beats
     ln -sfv $SNEWSDATA/snewsbeats $SNEWSBASE/$SNEWSVENV/lib/python3.11/site-packages/beats
+    ln -sfv $SNEWSDATA/snewsbeats/snews_db.sqlite $SNEWSBASE/$SNEWSVENV/lib/python3.11/site-packages/snews_db.sqlite
 
 
     #######################################
