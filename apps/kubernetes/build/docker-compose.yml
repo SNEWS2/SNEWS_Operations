@@ -1,0 +1,109 @@
+services:
+  snews_base:
+    image: snews_base
+    build:
+      context: .
+      dockerfile: Dockerfile.snews_base
+      args:
+        DOCKER_USER: ${DOCKER_USER}
+        SNEWS_MODE: ${SNEWS_MODE}
+        HOP_USERNAME: ${HOP_USERNAME}
+        HOP_PASSWORD: ${HOP_PASSWORD}
+    environment:
+      - DOCKER_USER=${DOCKER_USER}
+      - SNEWS_MODE=${SNEWS_MODE}
+    container_name: snews_base
+
+  coincidence_system:
+    build:
+      context: .
+      dockerfile: Dockerfile.coincidence_system
+      args:
+        REPO_URL: https://github.com/SNEWS2/SNEWS_Coincidence_System.git
+        BRANCH: main
+        DOCKER_USER: ${DOCKER_USER}
+        SNEWS_MODE: ${SNEWS_MODE}
+        HOP_USERNAME: ${HOP_USERNAME}
+        HOP_PASSWORD: ${HOP_PASSWORD}
+    container_name: coincidence_system
+    environment:
+      - DOCKER_USER=${DOCKER_USER}
+      - SNEWS_MODE=${SNEWS_MODE}
+      - HOP_USERNAME=${HOP_USERNAME}
+      - HOP_PASSWORD=${HOP_PASSWORD}
+    ports:
+      - "5001:5000"
+    depends_on:
+      - snews_base
+
+  coincidence_system_dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.coincidence_system_dev
+      args:
+        REPO_URL: https://github.com/SNEWS2/SNEWS_Coincidence_System.git
+        BRANCH: main
+        DOCKER_USER: ${DOCKER_USER}
+        SNEWS_MODE: ${SNEWS_MODE}
+        HOP_USERNAME: ${HOP_USERNAME}
+        HOP_PASSWORD: ${HOP_PASSWORD}
+    container_name: coincidence_system_dev
+    environment:
+      - DOCKER_USER=${DOCKER_USER}
+      - SNEWS_MODE=${SNEWS_MODE}
+      - HOP_USERNAME=${HOP_USERNAME}
+      - HOP_PASSWORD=${HOP_PASSWORD}
+    ports:
+      - "5006:5000"
+    depends_on:
+      - snews_base
+
+  monitoring_website:
+    build:
+      context: .
+      dockerfile: Dockerfile.monitoring_website
+      args:
+        DOCKER_USER: ${DOCKER_USER}
+        SNEWS_MODE: ${SNEWS_MODE}
+        DATABASE_URL: ${DATABASE_URL}
+        REPO_URL: https://github.com/SNEWS2/SNEWS_Monitoring_website.git
+        BRANCH: main
+    container_name: monitoring_website
+    environment:
+      - DOCKER_USER=${DOCKER_USER}
+      - SNEWS_MODE=${SNEWS_MODE}
+      - DATABASE_URL=${DATABASE_URL}
+    ports:
+      - "8000:8000"
+    depends_on:
+      - snews_base
+
+  db_pipeline:
+    build:
+      context: .
+      dockerfile: Dockerfile.db_pipeline
+      args:
+        DOCKER_USER: ${DOCKER_USER}
+        SNEWS_MODE: ${SNEWS_MODE}
+        HOP_USERNAME: ${HOP_USERNAME}
+        HOP_PASSWORD: ${HOP_PASSWORD}
+        POSTGRES_HOST: ${POSTGRES_HOST}
+        POSTGRES_PORT: ${POSTGRES_PORT}
+        POSTGRES_USER: ${POSTGRES_USER}
+        POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+        POSTGRES_DB: ${POSTGRES_DB}
+    container_name: db_pipeline
+    environment:
+      - DOCKER_USER=${DOCKER_USER}
+      - SNEWS_MODE=${SNEWS_MODE}
+      - HOP_USERNAME=${HOP_USERNAME}
+      - HOP_PASSWORD=${HOP_PASSWORD}
+      - POSTGRES_HOST=${POSTGRES_HOST}
+      - POSTGRES_PORT=${POSTGRES_PORT}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    ports:
+      - "5005:5000"
+    depends_on:
+      - snews_base

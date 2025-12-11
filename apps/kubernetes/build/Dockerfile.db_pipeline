@@ -1,0 +1,46 @@
+FROM snews_base:latest
+
+# Set working directory
+WORKDIR /app
+
+# Accept build arguments
+ARG DOCKER_USER
+ARG SNEWS_MODE
+ARG HOP_USERNAME
+ARG HOP_PASSWORD
+ARG POSTGRES_HOST
+ARG POSTGRES_USER
+ARG POSTGRES_PASSWORD
+ARG POSTGRES_DB
+ARG POSTGRES_PORT
+
+# Set environment variables
+ENV DOCKER_USER=${DOCKER_USER}
+ENV SNEWS_MODE=${SNEWS_MODE}
+ENV HOP_USERNAME=${HOP_USERNAME}
+ENV HOP_PASSWORD=${HOP_PASSWORD}
+ENV POSTGRES_HOST=${POSTGRES_HOST}
+#ENV POSTGRES_USER=${POSTGRES_USER}
+#ENV POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+ENV POSTGRES_DB=${POSTGRES_DB}
+ENV POSTGRES_PORT=${POSTGRES_PORT}
+
+SHELL ["/bin/bash", "-c"]
+
+USER ${DOCKER_USER}
+
+COPY --chown=${DOCKER_USER} SNEWS_DB_PIPELINE /app/
+
+# RUN chmod +x /app/generate_firedrill_creds.sh /app/init_creds.sh
+
+# Install dependencies using Poetry
+RUN poetry lock
+RUN poetry install
+
+COPY --chown=${DOCKER_USER} --chmod=700 generate_firedrill_creds.sh init_creds.sh /app/
+RUN /app/generate_firedrill_creds.sh
+## Command to run the coincidence system
+#CMD ["poetry", "run", "snews_db", "--env", "/app/snews_db/tests/etc/test-config.env", "listen-to-detectors", "--firedrill"]
+
+# Set up credentials and run the coincidence system
+CMD ["/app/init_creds.sh", "poetry run snews_db --env /app/snews_db/tests/etc/test-config.env listen-to-detectors --no-firedrill"]

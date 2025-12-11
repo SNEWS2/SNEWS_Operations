@@ -1,0 +1,49 @@
+FROM python:3.11-trixie
+
+# to use this base image 
+# FROM --platform=linux/amd64 snews_base:latest
+#
+LABEL org.opencontainers.image.ref.name="snews_base"
+LABEL org.opencontainers.image.title="SNEWS2.0 base image"
+LABEL org.opencontainers.image.description="Base image for SNEWS containers"
+LABEL org.opencontainers.image.authors="mlinvill@purdue.edu"
+
+# Setup a non-root user to run code 
+ARG DOCKER_USER=snews
+ARG GNUPGHOME=/home/${DOCKER_USER}/.gnupg
+ARG PASSWORD_STORE_DIR=/etc/snews/.password-store
+
+ENV LC_ALL=C
+ENV TZ=":/etc/localtime"
+ENV GNUPGHOME=${GNUPGHOME}
+ENV PASSWORD_STORE_DIR=${PASSWORD_STORE_DIR}
+
+# Install system dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends gnupg pass apt-transport-https ca-certificates && \
+    apt-get install -y --no-install-recommends inetutils-ping build-essential git libpq-dev && \
+    rm -rf /var/lib/apt/lists/*
+
+#
+# Containers won't source /etc/profile.d/ scripts. 
+# System-wide since we're in a container. 
+#
+COPY --chmod=755 init_creds.sh /etc/init_creds.sh
+
+RUN echo ". /etc/init_creds.sh" >> /etc/bash.bashrc 
+
+
+# Install Poetry
+RUN pip install --no-cache-dir poetry
+
+RUN useradd --user-group --system --create-home --no-log-init ${DOCKER_USER}
+
+COPY --chmod=700 .gnupg ${GNUPGHOME}
+
+WORKDIR /app
+RUN chown -R ${DOCKER_USER} /app && chown -R ${DOCKER_USER} /home/${DOCKER_USER}/
+
+USER ${DOCKER_USER}
+
+RUN echo "alias ll='ls -al'" >> ~/.bash_aliases && \
+    echo "alias less=more" >> ~/.bash_aliases
