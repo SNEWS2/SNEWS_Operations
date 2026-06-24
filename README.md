@@ -1,6 +1,76 @@
 # SNEWS_Operations
 These are the useful bits for running the SNEWS 2.0 infrastructure.
 
+## Docker/Kubernetes
+The entire SNEWS 2.0 infrastructure runs as containers. There are Dockerfiles for each of the major components.
+This infrastructure is running in a Kubernetes cluster hosted at Purdue University.
+
+The containers images are created using a local Docker instance, then published to a Harbor repository. 
+Our Kubernetes instance deploys the images from the Harbor repository.
+
+A Makefile wraps the process of building and publishing the container images. This may need to be modified for use
+elsewhere. 
+
+
+### Build/run
+
+SNEWS geddes\_build Makefile
+
+Usage:
+  make <target> [VAR=value ...]
+
+Common variables (with current defaults):
+  PLATFORM=linux/amd64
+  DOCKER\_USER=snews
+  SNEWS\_MODE=dev
+  TAG=latest
+    (TAG controls which remote :tag is created/pushed; pass TAG=... to both tag-* and push-* invocations)
+  REGISTRY=geddes-registry.rcac.purdue.edu
+  REGISTRY\_NAMESPACE=snews
+  COMPOSE\_PROJECT=build
+
+Top-level targets:
+  base                Build the base image first
+  build               Incremental build of all images
+  build-all           Build all images
+  clean-stamps        Remove local build stamps so next build rebuilds
+  docker-purge        DANGEROUS: reclaim disk by pruning ALL unused docker data (requires CONFIRM=YES)
+  help                Show help / list available targets
+  push                Push all images for the current TAG (default: latest)
+  push-all            Push all images for the current TAG (default: latest)
+  release             Build, tag, and push all images for the current TAG (default: latest)
+  security            Alias for security-updates
+  security-updates    Full rebuild (pull base layers for snews\_base, rebuild everything else w/o pull), then tag+push
+  security\_updates    Alias for security-updates
+  tag                 Tag all images for the remote registry for the current TAG (default: latest)
+  tag-all             Tag all images for the current TAG (default: latest)
+
+Per-image targets (IMAGE in: coincidence\_system coincidence\_system\_dev db\_pipeline firework\_followup monitoring\_website publishing\_tools snews\_base)
+  build-<IMAGE>        Incremental build (rebuild when Dockerfile/context changes)
+  tag-<IMAGE>          Tag IMAGE into geddes-registry.rcac.purdue.edu/snews/...:latest
+  push-<IMAGE>         Push tagged image to remote registry
+
+Examples:
+  make build-all
+  make tag-all TAG=development
+  make push-all TAG=development
+  make release TAG=development
+  make security-updates TAG=development
+
+
+
+### Credentials
+
+### Monitor
+
+### Back-up
+
+
+
+
+
+# Legacy documentation
+
 ## Apptainer usage:
 Apptainer is a handy container environment that doesn't require administrative
 access to install or execute.

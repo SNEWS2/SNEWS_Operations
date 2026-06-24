@@ -1,0 +1,41 @@
+FROM snews_base:latest
+
+# Set working directory
+WORKDIR /app
+
+# Accept build arguments
+# SNEWS_MODE: prod or dev
+ARG DOCKER_USER
+ARG SNEWS_MODE
+ARG HOP_USERNAME
+ARG HOP_PASSWORD
+
+# Set environment variables
+ENV DOCKER_USER=${DOCKER_USER}
+ENV SNEWS_MODE=${SNEWS_MODE}
+#ENV HOP_USERNAME=${HOP_USERNAME}
+#ENV HOP_PASSWORD=${HOP_PASSWORD}
+ENV LC_ALL=C
+ENV TZ=":/etc/localtime"
+
+# Clone the repository
+ARG REPO_URL
+ARG BRANCH
+
+USER ${DOCKER_USER}
+
+# RUN git clone --branch ${BRANCH} ${REPO_URL} .
+COPY --chown=${DOCKER_USER} SNEWS_Coincidence_System /app/
+
+# Copy credentials into the container
+COPY --chown=${DOCKER_USER} --chmod=755 generate_firedrill_creds.sh init_creds.sh /app
+# RUN chmod +x /app/generate_firedrill_creds.sh /app/init_creds.sh
+
+# Install dependencies using Poetry
+RUN poetry lock
+RUN poetry install
+
+## Command to run the coincidence system
+
+# ENTRYPOINT ["/app/init_creds.sh"]
+CMD ["/app/init_creds.sh", "poetry run snews_cs run-coincidence --no-firedrill"]

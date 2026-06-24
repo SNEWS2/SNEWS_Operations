@@ -1,0 +1,42 @@
+FROM snews_base:latest
+
+WORKDIR /app
+
+USER root
+SHELL ["/bin/bash", "-c"]
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends nodejs npm
+
+
+# Accept build arguments
+ARG DATABASE_URL
+ARG BRANCH
+ARG REPO_URL
+ARG DOCKER_USER
+
+# Set environment variables
+ENV DATABASE_URL=${DATABASE_URL}
+ENV DOCKER_USER=${DOCKER_USER}
+ENV SNEWS_MODE=${SNEWS_MODE}
+
+# Backend
+COPY --chown=${DOCKER_USER} SNEWS_Monitoring_Website /app/
+#RUN git clone --branch ${BRANCH} ${REPO_URL} && \
+
+USER ${DOCKER_USER}
+
+WORKDIR /app/SNEWS_Monitoring_Website/backend
+# RUN poetry lock && poetry install
+
+# RUN echo ${DATABASE_URL} >> .env
+
+# npm audit fix --force uninstalls react-scripts for vulernabilities, should I be concerned? *fp*
+#RUN cd SNEWS_Monitoring_Website/frontend && npm install && npm audit fix --force && npx update-browserslist-db@latest
+#RUN cd SNEWS_Monitoring_Website/frontend && npm install && npx update-browserslist-db@latest
+
+WORKDIR /app/SNEWS_Monitoring_Website
+ 
+# Command to keep the container running
+#CMD ["./launcher.sh"]
+CMD ["tail", "-f", "/dev/null"]
