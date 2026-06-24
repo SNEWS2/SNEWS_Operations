@@ -107,3 +107,23 @@ services:
       - "5005:5000"
     depends_on:
       - snews_base
+
+  firework_followup:
+    build:
+      context: .
+      dockerfile: Dockerfile.firework_followup
+      args:
+        DOCKER_USER: ${DOCKER_USER}
+        SNEWS_MODE: ${SNEWS_MODE}
+        HOP_USERNAME: ${HOP_USERNAME}
+        HOP_PASSWORD: ${HOP_PASSWORD}
+        SNEWPDAG_REPO_URL: https://github.com/SNEWS2/snewpdag.git
+        PLANNER_REPO_URL: https://github.itap.purdue.edu/mlinvill/snews-planner.git
+    container_name: firework_followup
+    environment:
+      - DOCKER_USER=${DOCKER_USER}
+      - SNEWS_MODE=${SNEWS_MODE}
+      - HOP_USERNAME=${HOP_USERNAME}
+      - HOP_PASSWORD=${HOP_PASSWORD}
+    depends_on:
+      - snews_base
